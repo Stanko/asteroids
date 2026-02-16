@@ -223,6 +223,22 @@ export function initApp(root: HTMLElement): void {
     },
   });
 
+  window.addEventListener("keydown", (e) => {
+    if (
+      ["input", "textarea", "button", "select"].includes(
+        document.activeElement?.tagName.toLowerCase() || "",
+      )
+    ) {
+      return;
+    }
+    if (e.key === "Enter") {
+      if (previewAnimationPlaying) {
+        stopPreviewAnimation();
+        return;
+      }
+      startPreviewAnimation();
+    }
+  });
   window.addEventListener("resize", onResize);
   onResize();
   renderLoop();

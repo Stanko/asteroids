@@ -30,15 +30,11 @@ export type AppParams = {
 
 export const PARAM_VERSION = 10;
 
-// small asteroids
-// 44px
-// distortion 1.5
-// size 0.85
 export const DEFAULT_PARAMS: AppParams = {
   exportSizePx: 44,
   normalEdgeStrength: 0,
   depthEdgeStrength: 1,
-  silhouetteOutlineColor: "#5F6DDA",
+  silhouetteOutlineColor: "#9EB9FF",
 
   seed: "asteroid-0001",
   distortion: 0.85,
@@ -52,7 +48,8 @@ export const DEFAULT_PARAMS: AppParams = {
   rotationSteps: 16,
   previewFps: 8,
 
-  palette: ["#565158", "#6f696f", "#a39ca2", "#cccacf"],
+  // palette: ["#565158", "#6f696f", "#a39ca2", "#cccacf"],
+  palette: ["#767178", "#9f999f", "#b3b0b2", "#cccacf"],
   outlineShadowColor: "#1D1C1C",
   outlineLightColor: "#959196",
   outlineLightThreshold: 0.3,
@@ -66,18 +63,24 @@ export const PRESET_PARAMS: Record<PresetName, Partial<AppParams>> = {
     distortion: 1.5,
     size: 0.85,
     toonSteps: 4,
+    lightIntensity: 1.45,
+    ambientIntensity: 0,
   },
   md: {
-    exportSizePx: 44,
-    distortion: 0.85,
+    exportSizePx: 64,
+    distortion: 1.5,
     size: 0.85,
     toonSteps: 4,
+    lightIntensity: 1.25,
+    ambientIntensity: 0,
   },
   lg: {
-    exportSizePx: 64,
-    distortion: 0.6,
-    size: 0.9,
-    toonSteps: 5,
+    exportSizePx: 84,
+    distortion: 1.5,
+    size: 0.85,
+    toonSteps: 4,
+    lightIntensity: 1.1,
+    ambientIntensity: 0,
   },
 };
 
