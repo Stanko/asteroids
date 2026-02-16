@@ -1,5 +1,6 @@
 export type HexColor = `#${string}`;
 export type PreviewBg = "transparent" | "checker";
+export type PresetName = "sm" | "md" | "lg";
 
 export type AppParams = {
   exportSizePx: number;
@@ -18,12 +19,14 @@ export type AppParams = {
   rotationSteps: number;
 
   palette: [HexColor, HexColor, HexColor, HexColor];
-  outlineColor: HexColor;
+  outlineShadowColor: HexColor;
+  outlineLightColor: HexColor;
+  outlineLightThreshold: number;
 
   bg: PreviewBg;
 };
 
-export const PARAM_VERSION = 7;
+export const PARAM_VERSION = 8;
 
 // small asteroids
 // 44px
@@ -46,9 +49,35 @@ export const DEFAULT_PARAMS: AppParams = {
   rotationSteps: 16,
 
   palette: ["#565158", "#6f696f", "#a39ca2", "#cccacf"],
-  outlineColor: "#1d1c1c",
+  outlineShadowColor: "#1D1C1C",
+  outlineLightColor: "#959196",
+  outlineLightThreshold: 0.3,
 
   bg: "checker",
+};
+
+export const PRESET_PARAMS: Record<PresetName, Partial<AppParams>> = {
+  sm: {
+    exportSizePx: 32,
+    distortion: 1.4,
+    size: 0.83,
+    toonSteps: 4,
+    rotationSteps: 16,
+  },
+  md: {
+    exportSizePx: 44,
+    distortion: 0.85,
+    size: 0.85,
+    toonSteps: 4,
+    rotationSteps: 16,
+  },
+  lg: {
+    exportSizePx: 64,
+    distortion: 0.6,
+    size: 0.9,
+    toonSteps: 5,
+    rotationSteps: 24,
+  },
 };
 
 const HEX_COLOR_PATTERN = /^#[0-9A-F]{6}$/;
@@ -187,9 +216,19 @@ export function normalizeParams(raw: Partial<AppParams>): AppParams {
     ),
 
     palette: normalizePalette(raw.palette),
-    outlineColor: normalizeHexColor(
-      raw.outlineColor,
-      DEFAULT_PARAMS.outlineColor,
+    outlineShadowColor: normalizeHexColor(
+      raw.outlineShadowColor,
+      DEFAULT_PARAMS.outlineShadowColor,
+    ),
+    outlineLightColor: normalizeHexColor(
+      raw.outlineLightColor,
+      DEFAULT_PARAMS.outlineLightColor,
+    ),
+    outlineLightThreshold: normalizeFloat(
+      raw.outlineLightThreshold,
+      DEFAULT_PARAMS.outlineLightThreshold,
+      0,
+      1,
     ),
 
     bg: raw.bg === "transparent" ? "transparent" : "checker",

@@ -1,5 +1,5 @@
 import GUI from "lil-gui";
-import type { AppParams } from "./params";
+import type { AppParams, PresetName } from "./params";
 
 export type UiBindings = {
   onParamPatch: (
@@ -8,6 +8,7 @@ export type UiBindings = {
   ) => void;
   onRandomize: () => void;
   onRandomizeSeed: () => void;
+  onApplyPreset: (preset: PresetName) => void;
   onGenerate: () => void;
 };
 
@@ -24,12 +25,16 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     p1: params.palette[1],
     p2: params.palette[2],
     p3: params.palette[3],
-    outline: params.outlineColor,
+    outlineShadow: params.outlineShadowColor,
+    outlineLight: params.outlineLightColor,
   };
 
   const actions = {
     Randomize: () => bindings.onRandomize(),
     RandomizeSeed: () => bindings.onRandomizeSeed(),
+    PresetSM: () => bindings.onApplyPreset("sm"),
+    PresetMD: () => bindings.onApplyPreset("md"),
+    PresetLG: () => bindings.onApplyPreset("lg"),
     Generate: () => bindings.onGenerate(),
   };
 
@@ -106,6 +111,12 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     .onChange((value: number) => {
       bindings.onParamPatch({ depthEdgeStrength: value });
     });
+  edgeFolder
+    .add(params, "outlineLightThreshold", 0, 1, 0.001)
+    .name("outlineLightThreshold")
+    .onChange((value: number) => {
+      bindings.onParamPatch({ outlineLightThreshold: value });
+    });
 
   const paletteFolder = gui.addFolder("Palette");
   paletteFolder
@@ -125,11 +136,19 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     .name("palette[3]")
     .onChange((value: string) => updatePalette(3, value));
   paletteFolder
-    .addColor(paletteProxy, "outline")
-    .name("outlineColor")
+    .addColor(paletteProxy, "outlineShadow")
+    .name("outlineShadowColor")
     .onChange((value: string) => {
       bindings.onParamPatch({
-        outlineColor: value as AppParams["outlineColor"],
+        outlineShadowColor: value as AppParams["outlineShadowColor"],
+      });
+    });
+  paletteFolder
+    .addColor(paletteProxy, "outlineLight")
+    .name("outlineLightColor")
+    .onChange((value: string) => {
+      bindings.onParamPatch({
+        outlineLightColor: value as AppParams["outlineLightColor"],
       });
     });
 
@@ -143,6 +162,9 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
 
   gui.add(actions, "Randomize");
   gui.add(actions, "RandomizeSeed");
+  gui.add(actions, "PresetSM").name("Preset sm");
+  gui.add(actions, "PresetMD").name("Preset md");
+  gui.add(actions, "PresetLG").name("Preset lg");
   gui.add(actions, "Generate").name("Generate (sprite sheet)");
 
   function updatePalette(index: number, value: string): void {
@@ -157,7 +179,8 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
       paletteProxy.p1 = params.palette[1];
       paletteProxy.p2 = params.palette[2];
       paletteProxy.p3 = params.palette[3];
-      paletteProxy.outline = params.outlineColor;
+      paletteProxy.outlineShadow = params.outlineShadowColor;
+      paletteProxy.outlineLight = params.outlineLightColor;
       gui
         .controllersRecursive()
         .forEach((controller) => controller.updateDisplay());

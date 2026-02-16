@@ -35,9 +35,15 @@ function parsePalette(raw: string | null): AppParams["palette"] | undefined {
   return normalized as AppParams["palette"];
 }
 
-function parseOutlineColor(raw: string | null): AppParams["outlineColor"] | undefined {
+function parseOutlineShadowColor(raw: string | null): AppParams["outlineShadowColor"] | undefined {
   if (!raw) return undefined;
-  const normalized = normalizeHexColor(`#${raw}`, DEFAULT_PARAMS.outlineColor);
+  const normalized = normalizeHexColor(`#${raw}`, DEFAULT_PARAMS.outlineShadowColor);
+  return normalized;
+}
+
+function parseOutlineLightColor(raw: string | null): AppParams["outlineLightColor"] | undefined {
+  if (!raw) return undefined;
+  const normalized = normalizeHexColor(`#${raw}`, DEFAULT_PARAMS.outlineLightColor);
   return normalized;
 }
 
@@ -58,7 +64,9 @@ export function parseParamsFromSearch(search: string): AppParams {
     flatShading: url.get("fs") === "1",
     rotationSteps: parseIntValue(url.get("rs")),
     palette: parsePalette(url.get("p")),
-    outlineColor: parseOutlineColor(url.get("oc")),
+    outlineShadowColor: parseOutlineShadowColor(url.get("oc0") ?? url.get("oc")),
+    outlineLightColor: parseOutlineLightColor(url.get("oc1")),
+    outlineLightThreshold: parseFloatValue(url.get("ot")),
     bg: url.get("bg") === "t" ? "transparent" : "checker",
   });
 
@@ -84,7 +92,9 @@ export function serializeParamsToSearch(params: AppParams): string {
       "p",
       normalized.palette.map((hex) => hex.slice(1).toUpperCase()).join(","),
     ],
-    ["oc", normalized.outlineColor.slice(1).toUpperCase()],
+    ["oc0", normalized.outlineShadowColor.slice(1).toUpperCase()],
+    ["oc1", normalized.outlineLightColor.slice(1).toUpperCase()],
+    ["ot", formatFloat(normalized.outlineLightThreshold)],
     ["bg", normalized.bg === "transparent" ? "t" : "c"],
   ];
 

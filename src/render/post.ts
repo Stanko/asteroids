@@ -76,8 +76,10 @@ export class PixelArtPipeline {
     this.compositeMaterial.uniforms.depthEdgeStrength.value = Math.min(1, Math.max(0, depthEdgeStrength));
   }
 
-  setOutlineColor(color: Color): void {
-    this.compositeMaterial.uniforms.outlineColor.value.copy(color);
+  setOutlineStyle(shadowColor: Color, lightColor: Color, threshold: number): void {
+    this.compositeMaterial.uniforms.outlineShadowColor.value.copy(shadowColor);
+    this.compositeMaterial.uniforms.outlineLightColor.value.copy(lightColor);
+    this.compositeMaterial.uniforms.outlineLightThreshold.value = Math.min(1, Math.max(0, threshold));
   }
 
   render(
@@ -127,7 +129,9 @@ function createCompositeMaterial(): ShaderMaterial {
       resolution: { value: new Vector4(1, 1, 1, 1) },
       normalEdgeStrength: { value: 1 },
       depthEdgeStrength: { value: 1 },
-      outlineColor: { value: new Color('#141219') },
+      outlineShadowColor: { value: new Color('#141219') },
+      outlineLightColor: { value: new Color('#5A5961') },
+      outlineLightThreshold: { value: 0.58 },
     },
     vertexShader: /* glsl */ `
       varying vec2 vUv;
@@ -144,7 +148,9 @@ function createCompositeMaterial(): ShaderMaterial {
       uniform vec4 resolution;
       uniform float normalEdgeStrength;
       uniform float depthEdgeStrength;
-      uniform vec3 outlineColor;
+      uniform vec3 outlineShadowColor;
+      uniform vec3 outlineLightColor;
+      uniform float outlineLightThreshold;
 
       varying vec2 vUv;
 
@@ -206,6 +212,8 @@ function createCompositeMaterial(): ShaderMaterial {
           clamp(normalEdgeStrength * nei, 0.0, 1.0)
         );
 
+        float brightness = dot(texel.rgb, vec3(0.2126, 0.7152, 0.0722));
+        vec3 outlineColor = brightness >= outlineLightThreshold ? outlineLightColor : outlineShadowColor;
         vec3 color = mix(texel.rgb, outlineColor, edgeMix);
         gl_FragColor = vec4(color, texel.a);
       }

@@ -17,7 +17,7 @@ import {
   generateAsteroidGeometry,
   EXPORT_BOX_SIZE,
 } from "./asteroid/generateAsteroid";
-import { cloneParams, normalizeParams, roundTo3 } from "./params";
+import { cloneParams, normalizeParams, PRESET_PARAMS, roundTo3 } from "./params";
 import type { AppParams } from "./params";
 import { parseParamsFromSearch, serializeParamsToSearch } from "./urlParams";
 import { PixelArtPipeline } from "./render/post";
@@ -149,6 +149,11 @@ export function initApp(root: HTMLElement): void {
 
       applyParamPatch({ seed }, { regenerate: true, syncUrl: false });
 
+      queueUrlUpdate();
+      ui.refresh();
+    },
+    onApplyPreset: (preset) => {
+      applyParamPatch(PRESET_PARAMS[preset], { regenerate: true, syncUrl: false });
       queueUrlUpdate();
       ui.refresh();
     },
@@ -333,7 +338,11 @@ export function initApp(root: HTMLElement): void {
   }
 
   function applyOutlineColor(sourceParams: AppParams): void {
-    pixelPipeline.setOutlineColor(new Color(sourceParams.outlineColor));
+    pixelPipeline.setOutlineStyle(
+      new Color(sourceParams.outlineShadowColor),
+      new Color(sourceParams.outlineLightColor),
+      sourceParams.outlineLightThreshold,
+    );
   }
 
   function applyBackgroundMode(background: AppParams["bg"]): void {
@@ -372,7 +381,9 @@ export function initApp(root: HTMLElement): void {
 
     target.rotationSteps = source.rotationSteps;
     target.palette = [...source.palette];
-    target.outlineColor = source.outlineColor;
+    target.outlineShadowColor = source.outlineShadowColor;
+    target.outlineLightColor = source.outlineLightColor;
+    target.outlineLightThreshold = source.outlineLightThreshold;
     target.bg = source.bg;
   }
 }
