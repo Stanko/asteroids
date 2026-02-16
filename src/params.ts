@@ -6,6 +6,7 @@ export type AppParams = {
   exportSizePx: number;
   normalEdgeStrength: number;
   depthEdgeStrength: number;
+  silhouetteOutlineColor: HexColor;
 
   seed: string;
   distortion: number;
@@ -27,7 +28,7 @@ export type AppParams = {
   bg: PreviewBg;
 };
 
-export const PARAM_VERSION = 9;
+export const PARAM_VERSION = 10;
 
 // small asteroids
 // 44px
@@ -37,6 +38,7 @@ export const DEFAULT_PARAMS: AppParams = {
   exportSizePx: 44,
   normalEdgeStrength: 0,
   depthEdgeStrength: 1,
+  silhouetteOutlineColor: "#5F6DDA",
 
   seed: "asteroid-0001",
   distortion: 0.85,
@@ -186,6 +188,10 @@ export function normalizeParams(raw: Partial<AppParams>): AppParams {
       DEFAULT_PARAMS.depthEdgeStrength,
       0,
       1,
+    ),
+    silhouetteOutlineColor: normalizeHexColor(
+      raw.silhouetteOutlineColor,
+      DEFAULT_PARAMS.silhouetteOutlineColor,
     ),
 
     seed: sanitizeSeed(raw.seed, DEFAULT_PARAMS.seed),

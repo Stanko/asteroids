@@ -27,6 +27,7 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     p1: params.palette[1],
     p2: params.palette[2],
     p3: params.palette[3],
+    silhouetteOutline: params.silhouetteOutlineColor,
     outlineShadow: params.outlineShadowColor,
     outlineLight: params.outlineLightColor,
   };
@@ -101,6 +102,14 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     });
 
   const edgeFolder = gui.addFolder("Pixel / Edge");
+  edgeFolder
+    .addColor(paletteProxy, "silhouetteOutline")
+    .name("silhouetteOutlineColor")
+    .onChange((value: string) => {
+      bindings.onParamPatch({
+        silhouetteOutlineColor: value as AppParams["silhouetteOutlineColor"],
+      });
+    });
   edgeFolder
     .add(params, "normalEdgeStrength", 0, 1, 0.001)
     .name("normalEdgeStrength")
@@ -193,6 +202,7 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
       paletteProxy.p1 = params.palette[1];
       paletteProxy.p2 = params.palette[2];
       paletteProxy.p3 = params.palette[3];
+      paletteProxy.silhouetteOutline = params.silhouetteOutlineColor;
       paletteProxy.outlineShadow = params.outlineShadowColor;
       paletteProxy.outlineLight = params.outlineLightColor;
       gui

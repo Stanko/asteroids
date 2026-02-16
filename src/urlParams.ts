@@ -47,6 +47,12 @@ function parseOutlineLightColor(raw: string | null): AppParams["outlineLightColo
   return normalized;
 }
 
+function parseSilhouetteOutlineColor(raw: string | null): AppParams["silhouetteOutlineColor"] | undefined {
+  if (!raw) return undefined;
+  const normalized = normalizeHexColor(`#${raw}`, DEFAULT_PARAMS.silhouetteOutlineColor);
+  return normalized;
+}
+
 export function parseParamsFromSearch(search: string): AppParams {
   const query = search.startsWith("?") ? search.slice(1) : search;
   const url = new URLSearchParams(query);
@@ -58,6 +64,7 @@ export function parseParamsFromSearch(search: string): AppParams {
     exportSizePx: parseIntValue(url.get("px")),
     normalEdgeStrength: parseFloatValue(url.get("ne")),
     depthEdgeStrength: parseFloatValue(url.get("de")),
+    silhouetteOutlineColor: parseSilhouetteOutlineColor(url.get("so")),
     toonSteps: parseIntValue(url.get("ts")),
     lightIntensity: parseFloatValue(url.get("li")),
     ambientIntensity: parseFloatValue(url.get("ai")),
@@ -84,6 +91,7 @@ export function serializeParamsToSearch(params: AppParams): string {
     ["px", String(normalized.exportSizePx)],
     ["ne", formatFloat(normalized.normalEdgeStrength)],
     ["de", formatFloat(normalized.depthEdgeStrength)],
+    ["so", normalized.silhouetteOutlineColor.slice(1).toUpperCase()],
     ["ts", String(normalized.toonSteps)],
     ["li", formatFloat(normalized.lightIntensity)],
     ["ai", formatFloat(normalized.ambientIntensity)],

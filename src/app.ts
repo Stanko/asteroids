@@ -18,7 +18,12 @@ import {
   generateAsteroidGeometry,
   EXPORT_BOX_SIZE,
 } from "./asteroid/generateAsteroid";
-import { cloneParams, normalizeParams, PRESET_PARAMS, roundTo3 } from "./params";
+import {
+  cloneParams,
+  normalizeParams,
+  PRESET_PARAMS,
+  roundTo3,
+} from "./params";
 import type { AppParams } from "./params";
 import { parseParamsFromSearch, serializeParamsToSearch } from "./urlParams";
 import { PixelArtPipeline } from "./render/post";
@@ -177,7 +182,10 @@ export function initApp(root: HTMLElement): void {
       ui.refresh();
     },
     onApplyPreset: (preset) => {
-      applyParamPatch(PRESET_PARAMS[preset], { regenerate: true, syncUrl: false });
+      applyParamPatch(PRESET_PARAMS[preset], {
+        regenerate: true,
+        syncUrl: false,
+      });
       queueUrlUpdate();
       ui.refresh();
     },
@@ -277,8 +285,8 @@ export function initApp(root: HTMLElement): void {
 
   function onResize(): void {
     const bounds = viewport.getBoundingClientRect();
-    const width = Math.max(1, Math.floor(bounds.width));
-    const height = Math.max(1, Math.floor(bounds.height));
+    const width = Math.min(600, Math.floor(bounds.width));
+    const height = Math.min(600, Math.floor(bounds.height));
 
     renderer.setSize(width, height, false);
 
@@ -374,7 +382,9 @@ export function initApp(root: HTMLElement): void {
   function syncInteractionCameraToAsteroid(): void {
     cameraQuaternion
       .copy(baseControlQuat)
-      .multiply(inverseAsteroidQuaternion.copy(asteroidRoot.quaternion).invert());
+      .multiply(
+        inverseAsteroidQuaternion.copy(asteroidRoot.quaternion).invert(),
+      );
 
     cameraOffset.set(0, 0, CAMERA_DISTANCE).applyQuaternion(cameraQuaternion);
 
@@ -421,6 +431,9 @@ export function initApp(root: HTMLElement): void {
   }
 
   function applyOutlineColor(sourceParams: AppParams): void {
+    pixelPipeline.setSilhouetteOutlineColor(
+      new Color(sourceParams.silhouetteOutlineColor),
+    );
     pixelPipeline.setOutlineStyle(
       new Color(sourceParams.outlineShadowColor),
       new Color(sourceParams.outlineLightColor),
@@ -452,6 +465,7 @@ export function initApp(root: HTMLElement): void {
     target.exportSizePx = source.exportSizePx;
     target.normalEdgeStrength = source.normalEdgeStrength;
     target.depthEdgeStrength = source.depthEdgeStrength;
+    target.silhouetteOutlineColor = source.silhouetteOutlineColor;
 
     target.seed = source.seed;
     target.distortion = source.distortion;

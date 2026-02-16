@@ -76,6 +76,10 @@ export class PixelArtPipeline {
     this.compositeMaterial.uniforms.depthEdgeStrength.value = Math.min(1, Math.max(0, depthEdgeStrength));
   }
 
+  setSilhouetteOutlineColor(color: Color): void {
+    this.compositeMaterial.uniforms.silhouetteOutlineColor.value.copy(color);
+  }
+
   setOutlineStyle(shadowColor: Color, lightColor: Color, threshold: number): void {
     this.compositeMaterial.uniforms.outlineShadowColor.value.copy(shadowColor);
     this.compositeMaterial.uniforms.outlineLightColor.value.copy(lightColor);
@@ -129,6 +133,7 @@ function createCompositeMaterial(): ShaderMaterial {
       resolution: { value: new Vector4(1, 1, 1, 1) },
       normalEdgeStrength: { value: 1 },
       depthEdgeStrength: { value: 1 },
+      silhouetteOutlineColor: { value: new Color('#5F6DDA') },
       outlineShadowColor: { value: new Color('#141219') },
       outlineLightColor: { value: new Color('#5A5961') },
       outlineLightThreshold: { value: 0.58 },
@@ -148,6 +153,7 @@ function createCompositeMaterial(): ShaderMaterial {
       uniform vec4 resolution;
       uniform float normalEdgeStrength;
       uniform float depthEdgeStrength;
+      uniform vec3 silhouetteOutlineColor;
       uniform vec3 outlineShadowColor;
       uniform vec3 outlineLightColor;
       uniform float outlineLightThreshold;
@@ -160,6 +166,10 @@ function createCompositeMaterial(): ShaderMaterial {
 
       vec3 getNormal(int x, int y) {
         return texture2D(tNormal, vUv + vec2(x, y) * resolution.zw).rgb * 2.0 - 1.0;
+      }
+
+      float getAlpha(int x, int y) {
+        return texture2D(tDiffuse, vUv + vec2(x, y) * resolution.zw).a;
       }
 
       float depthEdgeIndicator(float depth) {
@@ -193,10 +203,29 @@ function createCompositeMaterial(): ShaderMaterial {
         return step(0.1, indicator);
       }
 
+      float silhouetteOutlineIndicator(float alpha) {
+        if (alpha > 0.0) {
+          return 0.0;
+        }
+
+        float neighborAlpha = 0.0;
+        neighborAlpha = max(neighborAlpha, getAlpha(0, -1));
+        neighborAlpha = max(neighborAlpha, getAlpha(-1, 0));
+        neighborAlpha = max(neighborAlpha, getAlpha(1, 0));
+        neighborAlpha = max(neighborAlpha, getAlpha(0, 1));
+
+        return step(0.001, neighborAlpha);
+      }
+
       void main() {
         vec4 texel = texture2D(tDiffuse, vUv);
+        float soi = silhouetteOutlineIndicator(texel.a);
 
         if (texel.a <= 0.0) {
+          if (soi > 0.0) {
+            gl_FragColor = vec4(silhouetteOutlineColor, 1.0);
+            return;
+          }
           gl_FragColor = vec4(0.0);
           return;
         }
