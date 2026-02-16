@@ -4,12 +4,8 @@
 // This is the slim TypeScript variant of this implementation:
 // https://github.com/coverslide/node-alea
 
-export const getRandomSeeds = () => {
-  return [
-    Math.random().toString(36).slice(2),
-    Math.random().toString(36).slice(2),
-    Math.random().toString(36).slice(2),
-  ];
+export const getDefaultSeeds = () => {
+  return ["alea-default-0", "alea-default-1", "alea-default-2"];
 };
 
 const Alea = (...seeds: string[]): (() => number) => {
@@ -37,7 +33,7 @@ const Alea = (...seeds: string[]): (() => number) => {
   const s = [mash(" "), mash(" "), mash(" ")];
   let c = 1;
 
-  seeds = seeds.length > 0 ? seeds : getRandomSeeds();
+  seeds = seeds.length > 0 ? seeds : getDefaultSeeds();
 
   seeds.forEach((seed) => {
     s.forEach((_, i) => {
