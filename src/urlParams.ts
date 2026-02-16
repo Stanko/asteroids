@@ -63,6 +63,7 @@ export function parseParamsFromSearch(search: string): AppParams {
     ambientIntensity: parseFloatValue(url.get("ai")),
     flatShading: url.get("fs") === "1",
     rotationSteps: parseIntValue(url.get("rs")),
+    previewFps: parseIntValue(url.get("fps")),
     palette: parsePalette(url.get("p")),
     outlineShadowColor: parseOutlineShadowColor(url.get("oc0") ?? url.get("oc")),
     outlineLightColor: parseOutlineLightColor(url.get("oc1")),
@@ -88,6 +89,7 @@ export function serializeParamsToSearch(params: AppParams): string {
     ["ai", formatFloat(normalized.ambientIntensity)],
     ["fs", normalized.flatShading ? "1" : "0"],
     ["rs", String(normalized.rotationSteps)],
+    ["fps", String(normalized.previewFps)],
     [
       "p",
       normalized.palette.map((hex) => hex.slice(1).toUpperCase()).join(","),

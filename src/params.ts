@@ -17,6 +17,7 @@ export type AppParams = {
   flatShading: boolean;
 
   rotationSteps: number;
+  previewFps: number;
 
   palette: [HexColor, HexColor, HexColor, HexColor];
   outlineShadowColor: HexColor;
@@ -26,7 +27,7 @@ export type AppParams = {
   bg: PreviewBg;
 };
 
-export const PARAM_VERSION = 8;
+export const PARAM_VERSION = 9;
 
 // small asteroids
 // 44px
@@ -47,6 +48,7 @@ export const DEFAULT_PARAMS: AppParams = {
   flatShading: false,
 
   rotationSteps: 16,
+  previewFps: 8,
 
   palette: ["#565158", "#6f696f", "#a39ca2", "#cccacf"],
   outlineShadowColor: "#1D1C1C",
@@ -58,25 +60,22 @@ export const DEFAULT_PARAMS: AppParams = {
 
 export const PRESET_PARAMS: Record<PresetName, Partial<AppParams>> = {
   sm: {
-    exportSizePx: 32,
-    distortion: 1.4,
-    size: 0.83,
+    exportSizePx: 44,
+    distortion: 1.5,
+    size: 0.85,
     toonSteps: 4,
-    rotationSteps: 16,
   },
   md: {
     exportSizePx: 44,
     distortion: 0.85,
     size: 0.85,
     toonSteps: 4,
-    rotationSteps: 16,
   },
   lg: {
     exportSizePx: 64,
     distortion: 0.6,
     size: 0.9,
     toonSteps: 5,
-    rotationSteps: 24,
   },
 };
 
@@ -214,6 +213,7 @@ export function normalizeParams(raw: Partial<AppParams>): AppParams {
       1,
       256,
     ),
+    previewFps: normalizeInt(raw.previewFps, DEFAULT_PARAMS.previewFps, 1, 30),
 
     palette: normalizePalette(raw.palette),
     outlineShadowColor: normalizeHexColor(

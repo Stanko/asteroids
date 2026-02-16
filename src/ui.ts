@@ -6,6 +6,8 @@ export type UiBindings = {
     patch: Partial<AppParams>,
     options?: { regenerate?: boolean },
   ) => void;
+  isPreviewAnimationPlaying: () => boolean;
+  onTogglePreviewAnimation: () => void;
   onRandomize: () => void;
   onRandomizeSeed: () => void;
   onApplyPreset: (preset: PresetName) => void;
@@ -30,6 +32,7 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
   };
 
   const actions = {
+    TogglePreviewAnimation: () => bindings.onTogglePreviewAnimation(),
     Randomize: () => bindings.onRandomize(),
     RandomizeSeed: () => bindings.onRandomizeSeed(),
     PresetSM: () => bindings.onApplyPreset("sm"),
@@ -51,7 +54,6 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     .onChange((value: number) => {
       bindings.onParamPatch({ rotationSteps: value });
     });
-
   const shapeFolder = gui.addFolder("Asteroid");
   shapeFolder
     .add(params, "seed")
@@ -154,11 +156,20 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
 
   const previewFolder = gui.addFolder("Preview");
   previewFolder
+    .add(params, "previewFps", 1, 30, 1)
+    .name("previewFps")
+    .onChange((value: number) => {
+      bindings.onParamPatch({ previewFps: value });
+    });
+  previewFolder
     .add(params, "bg", ["checker", "transparent"])
     .name("background")
     .onChange((value: AppParams["bg"]) => {
       bindings.onParamPatch({ bg: value });
     });
+  const playPauseController = previewFolder
+    .add(actions, "TogglePreviewAnimation")
+    .name(bindings.isPreviewAnimationPlaying() ? "Pause" : "Play");
 
   gui.add(actions, "Randomize");
   gui.add(actions, "RandomizeSeed");
@@ -175,6 +186,9 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
 
   return {
     refresh: () => {
+      playPauseController.name(
+        bindings.isPreviewAnimationPlaying() ? "Pause" : "Play",
+      );
       paletteProxy.p0 = params.palette[0];
       paletteProxy.p1 = params.palette[1];
       paletteProxy.p2 = params.palette[2];

@@ -10,6 +10,7 @@ import {
   SRGBColorSpace,
   NoToneMapping,
   Group,
+  Quaternion,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Alea from "./utils/alea";
@@ -32,6 +33,7 @@ const URL_UPDATE_DEBOUNCE_MS = 200;
 const CAMERA_DISTANCE = 5;
 const VIEW_HALF_HEIGHT = 1.65;
 const LIGHT_DIRECTION = new Vector3(0.45, 0.3, 1.0).normalize();
+const AXIS_Z = new Vector3(0, 0, 1);
 
 export function initApp(root: HTMLElement): void {
   root.innerHTML = "";
@@ -110,14 +112,36 @@ export function initApp(root: HTMLElement): void {
   let previewPixelSize = 1;
   let urlTimer = 0;
   let isExporting = false;
+  let previewAnimationPlaying = false;
+  let previewAnimationFrame = 0;
+  let previewAnimationLastStepMs = 0;
+  const previewAnimationStart = new Quaternion();
+  const previewAnimationStep = new Quaternion();
+  const cameraQuaternion = new Quaternion();
+  const inverseAsteroidQuaternion = new Quaternion();
+  const cameraOffset = new Vector3();
 
   applyOutlineColor(params);
   applyBackgroundMode(params.bg);
   syncUrlImmediately();
 
+  controls.addEventListener("start", () => {
+    if (previewAnimationPlaying) {
+      stopPreviewAnimation();
+    }
+  });
+
   const ui = createUi(params, {
     onParamPatch: (patch, options) => {
       applyParamPatch(patch, options);
+    },
+    isPreviewAnimationPlaying: () => previewAnimationPlaying,
+    onTogglePreviewAnimation: () => {
+      if (previewAnimationPlaying) {
+        stopPreviewAnimation();
+        return;
+      }
+      startPreviewAnimation();
     },
     onRandomize: () => {
       const random = Alea(`randomize|${params.seed}|${Date.now()}`);
@@ -292,13 +316,72 @@ export function initApp(root: HTMLElement): void {
 
     controls.update();
 
-    asteroidRoot.quaternion
-      .copy(interactionCamera.quaternion)
-      .invert()
-      .multiply(baseControlQuat);
+    if (previewAnimationPlaying) {
+      advancePreviewAnimation(performance.now());
+    } else {
+      asteroidRoot.quaternion
+        .copy(interactionCamera.quaternion)
+        .invert()
+        .multiply(baseControlQuat);
+      asteroidRoot.updateMatrixWorld(true);
+    }
 
     pixelPipeline.render(renderer, scene, camera, null);
     drawExportOverlay();
+  }
+
+  function startPreviewAnimation(): void {
+    previewAnimationPlaying = true;
+    previewAnimationFrame = 0;
+    previewAnimationLastStepMs = performance.now();
+    previewAnimationStart.copy(asteroidRoot.quaternion);
+    asteroidRoot.quaternion.copy(previewAnimationStart);
+    asteroidRoot.updateMatrixWorld(true);
+    ui.refresh();
+  }
+
+  function stopPreviewAnimation(): void {
+    if (!previewAnimationPlaying) {
+      return;
+    }
+
+    syncInteractionCameraToAsteroid();
+    previewAnimationPlaying = false;
+    ui.refresh();
+  }
+
+  function advancePreviewAnimation(nowMs: number): void {
+    const stepDurationMs = 1000 / params.previewFps;
+    if (nowMs - previewAnimationLastStepMs >= stepDurationMs) {
+      const framesToAdvance = Math.floor(
+        (nowMs - previewAnimationLastStepMs) / stepDurationMs,
+      );
+      previewAnimationFrame =
+        (previewAnimationFrame + framesToAdvance) %
+        Math.max(1, params.rotationSteps);
+      previewAnimationLastStepMs += framesToAdvance * stepDurationMs;
+    }
+
+    const angle =
+      (previewAnimationFrame * Math.PI * 2) / Math.max(1, params.rotationSteps);
+    previewAnimationStep.setFromAxisAngle(AXIS_Z, angle);
+    asteroidRoot.quaternion
+      .copy(previewAnimationStart)
+      .multiply(previewAnimationStep);
+    asteroidRoot.updateMatrixWorld(true);
+  }
+
+  function syncInteractionCameraToAsteroid(): void {
+    cameraQuaternion
+      .copy(baseControlQuat)
+      .multiply(inverseAsteroidQuaternion.copy(asteroidRoot.quaternion).invert());
+
+    cameraOffset.set(0, 0, CAMERA_DISTANCE).applyQuaternion(cameraQuaternion);
+
+    interactionCamera.position.copy(controls.target).add(cameraOffset);
+    interactionCamera.quaternion.copy(cameraQuaternion);
+    interactionCamera.updateMatrixWorld(true);
+    controls.update();
   }
 
   function drawExportOverlay(): void {
@@ -380,6 +463,7 @@ export function initApp(root: HTMLElement): void {
     target.flatShading = source.flatShading;
 
     target.rotationSteps = source.rotationSteps;
+    target.previewFps = source.previewFps;
     target.palette = [...source.palette];
     target.outlineShadowColor = source.outlineShadowColor;
     target.outlineLightColor = source.outlineLightColor;
