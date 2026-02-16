@@ -94,7 +94,10 @@ export function initApp(root: HTMLElement): void {
   let flatGeometry = createFlatGeometryVariant(smoothGeometry);
 
   const material = createPaletteToonMaterial(params, LIGHT_DIRECTION);
-  const asteroidMesh = new Mesh(params.flatShading ? flatGeometry : smoothGeometry, material);
+  const asteroidMesh = new Mesh(
+    params.flatShading ? flatGeometry : smoothGeometry,
+    material,
+  );
   asteroidRoot.add(asteroidMesh);
 
   const pixelPipeline = new PixelArtPipeline();
@@ -133,6 +136,18 @@ export function initApp(root: HTMLElement): void {
         },
         { regenerate: true, syncUrl: false },
       );
+
+      queueUrlUpdate();
+      ui.refresh();
+    },
+    onRandomizeSeed: () => {
+      const random = Alea(`randomize|${params.seed}|${Date.now()}`);
+      const seed = `asteroid-${Math.floor(random() * 0xffffffff)
+        .toString(36)
+        .toUpperCase()
+        .padStart(7, "0")}`;
+
+      applyParamPatch({ seed }, { regenerate: true, syncUrl: false });
 
       queueUrlUpdate();
       ui.refresh();
@@ -205,12 +220,16 @@ export function initApp(root: HTMLElement): void {
       smoothGeometry = nextGeometry;
       flatGeometry = createFlatGeometryVariant(nextGeometry);
 
-      asteroidMesh.geometry = params.flatShading ? flatGeometry : smoothGeometry;
+      asteroidMesh.geometry = params.flatShading
+        ? flatGeometry
+        : smoothGeometry;
 
       previousSmooth.dispose();
       previousFlat.dispose();
     } else if (patch.flatShading !== undefined) {
-      asteroidMesh.geometry = params.flatShading ? flatGeometry : smoothGeometry;
+      asteroidMesh.geometry = params.flatShading
+        ? flatGeometry
+        : smoothGeometry;
     }
 
     updatePaletteToonMaterial(material, params, LIGHT_DIRECTION);

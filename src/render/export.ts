@@ -8,9 +8,9 @@ import {
   Object3D,
   Scene,
   Camera,
-} from 'three';
-import type { AppParams } from '../params';
-import { PixelArtPipeline } from './post';
+} from "three";
+import type { AppParams } from "../params";
+import { PixelArtPipeline } from "./post";
 
 const AXIS_Z = new Vector3(0, 0, 1);
 
@@ -25,7 +25,11 @@ type ExportOptions = {
   previewConfig: { width: number; height: number; pixelSize: number };
 };
 
-export async function exportSpriteSheet(options: ExportOptions): Promise<string> {
+const PER_ROW = 16;
+
+export async function exportSpriteSheet(
+  options: ExportOptions,
+): Promise<string> {
   const {
     renderer,
     pipeline,
@@ -40,30 +44,30 @@ export async function exportSpriteSheet(options: ExportOptions): Promise<string>
   const frameSize = params.exportSizePx;
   const frameCount = params.rotationSteps;
 
-  const cols = Math.min(16, frameCount);
+  const cols = Math.min(PER_ROW, frameCount);
   const rows = Math.ceil(frameCount / cols);
   const cellSize = frameSize + 2;
   const sheetWidth = cols * cellSize;
   const sheetHeight = rows * cellSize;
 
-  const sheetCanvas = document.createElement('canvas');
+  const sheetCanvas = document.createElement("canvas");
   sheetCanvas.width = sheetWidth;
   sheetCanvas.height = sheetHeight;
 
-  const sheetCtx = sheetCanvas.getContext('2d', { alpha: true });
+  const sheetCtx = sheetCanvas.getContext("2d", { alpha: true });
   if (!sheetCtx) {
-    throw new Error('Unable to create 2D context for sprite sheet export.');
+    throw new Error("Unable to create 2D context for sprite sheet export.");
   }
 
   sheetCtx.clearRect(0, 0, sheetWidth, sheetHeight);
 
-  const frameCanvas = document.createElement('canvas');
+  const frameCanvas = document.createElement("canvas");
   frameCanvas.width = frameSize;
   frameCanvas.height = frameSize;
 
-  const frameCtx = frameCanvas.getContext('2d', { alpha: true });
+  const frameCtx = frameCanvas.getContext("2d", { alpha: true });
   if (!frameCtx) {
-    throw new Error('Unable to create 2D context for frame composition.');
+    throw new Error("Unable to create 2D context for frame composition.");
   }
 
   const renderTarget = new WebGLRenderTarget(frameSize, frameSize);
@@ -94,7 +98,14 @@ export async function exportSpriteSheet(options: ExportOptions): Promise<string>
     // Export is rendered from WebGL only; the 2D preview overlay is never sampled here.
     pipeline.render(renderer, scene, camera, renderTarget);
 
-    renderer.readRenderTargetPixels(renderTarget, 0, 0, frameSize, frameSize, pixels);
+    renderer.readRenderTargetPixels(
+      renderTarget,
+      0,
+      0,
+      frameSize,
+      frameSize,
+      pixels,
+    );
 
     const flipped = flipY(pixels, frameSize, frameSize);
     const imageData = new ImageData(flipped, frameSize, frameSize);
@@ -111,7 +122,11 @@ export async function exportSpriteSheet(options: ExportOptions): Promise<string>
   asteroidRoot.quaternion.copy(startOrientation);
   asteroidRoot.updateMatrixWorld(true);
 
-  pipeline.setSize(previewConfig.width, previewConfig.height, previewConfig.pixelSize);
+  pipeline.setSize(
+    previewConfig.width,
+    previewConfig.height,
+    previewConfig.pixelSize,
+  );
 
   renderTarget.dispose();
 
@@ -122,7 +137,7 @@ export async function exportSpriteSheet(options: ExportOptions): Promise<string>
     startOrientation.y.toFixed(4),
     startOrientation.z.toFixed(4),
     startOrientation.w.toFixed(4),
-  ].join(',');
+  ].join(",");
   const hash = fnv1a(`${urlQuery}|oq=${orientationKey}`).slice(0, 10);
 
   const filename = `asteroid_${hash}.png`;
@@ -130,7 +145,11 @@ export async function exportSpriteSheet(options: ExportOptions): Promise<string>
   return filename;
 }
 
-function flipY(source: Uint8Array, width: number, height: number): Uint8ClampedArray<ArrayBuffer> {
+function flipY(
+  source: Uint8Array,
+  width: number,
+  height: number,
+): Uint8ClampedArray<ArrayBuffer> {
   const rowSize = width * 4;
   const out = new Uint8ClampedArray(new ArrayBuffer(source.length));
 
@@ -143,14 +162,17 @@ function flipY(source: Uint8Array, width: number, height: number): Uint8ClampedA
   return out;
 }
 
-async function downloadCanvas(canvas: HTMLCanvasElement, filename: string): Promise<void> {
+async function downloadCanvas(
+  canvas: HTMLCanvasElement,
+  filename: string,
+): Promise<void> {
   const blob = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob((file) => resolve(file), 'image/png');
+    canvas.toBlob((file) => resolve(file), "image/png");
   });
 
-  const url = blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/png');
+  const url = blob ? URL.createObjectURL(blob) : canvas.toDataURL("image/png");
 
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = url;
   link.download = filename;
   link.click();
