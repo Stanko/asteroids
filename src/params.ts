@@ -15,12 +15,14 @@ export type AppParams = {
   toonSteps: number;
   lightIntensity: number;
   ambientIntensity: number;
+  highlightAmount: number;
+  highlightOpacity: number;
   flatShading: boolean;
 
   rotationSteps: number;
   previewFps: number;
 
-  palette: [HexColor, HexColor, HexColor, HexColor];
+  palette: [HexColor, HexColor, HexColor, HexColor, HexColor];
   outlineShadowColor: HexColor;
   outlineLightColor: HexColor;
   outlineLightThreshold: number;
@@ -28,7 +30,7 @@ export type AppParams = {
   bg: PreviewBg;
 };
 
-export const PARAM_VERSION = 10;
+export const PARAM_VERSION = 11;
 
 export const DEFAULT_PARAMS: AppParams = {
   exportSizePx: 44,
@@ -41,15 +43,17 @@ export const DEFAULT_PARAMS: AppParams = {
   size: 0.85,
 
   toonSteps: 4,
-  lightIntensity: 1.2,
-  ambientIntensity: 0.25,
+  lightIntensity: 0.9,
+  ambientIntensity: 0.1,
+  highlightAmount: 0,
+  highlightOpacity: 0,
   flatShading: false,
 
-  rotationSteps: 16,
+  rotationSteps: 24,
   previewFps: 8,
 
   // palette: ["#565158", "#6f696f", "#a39ca2", "#cccacf"],
-  palette: ["#767178", "#9f999f", "#b3b0b2", "#cccacf"],
+  palette: ["#767178", "#9f999f", "#b3b0b2", "#cccacf", "#DBD6DA"],
   outlineShadowColor: "#1D1C1C",
   outlineLightColor: "#959196",
   outlineLightThreshold: 0.3,
@@ -57,30 +61,34 @@ export const DEFAULT_PARAMS: AppParams = {
   bg: "checker",
 };
 
+const common: Partial<AppParams> = {
+  size: 0.85,
+  toonSteps: 4,
+  highlightAmount: 0,
+  highlightOpacity: 0,
+  lightIntensity: 0.9,
+  ambientIntensity: 0.1,
+};
+
 export const PRESET_PARAMS: Record<PresetName, Partial<AppParams>> = {
   sm: {
+    ...common,
     exportSizePx: 44,
     distortion: 1.5,
-    size: 0.85,
-    toonSteps: 4,
-    lightIntensity: 1.45,
-    ambientIntensity: 0,
   },
   md: {
+    ...common,
     exportSizePx: 64,
     distortion: 1.5,
-    size: 0.85,
-    toonSteps: 4,
-    lightIntensity: 1.25,
-    ambientIntensity: 0,
   },
   lg: {
-    exportSizePx: 84,
+    ...common,
+    exportSizePx: 76,
     distortion: 1.5,
-    size: 0.85,
-    toonSteps: 4,
-    lightIntensity: 1.1,
-    ambientIntensity: 0,
+    lightIntensity: 0.85,
+    highlightAmount: 0.066,
+    highlightOpacity: 0.115,
+    size: 1,
   },
 };
 
@@ -211,6 +219,18 @@ export function normalizeParams(raw: Partial<AppParams>): AppParams {
     ambientIntensity: normalizeFloat(
       raw.ambientIntensity,
       DEFAULT_PARAMS.ambientIntensity,
+      0,
+      1,
+    ),
+    highlightAmount: normalizeFloat(
+      raw.highlightAmount,
+      DEFAULT_PARAMS.highlightAmount,
+      0,
+      1,
+    ),
+    highlightOpacity: normalizeFloat(
+      raw.highlightOpacity,
+      DEFAULT_PARAMS.highlightOpacity,
       0,
       1,
     ),

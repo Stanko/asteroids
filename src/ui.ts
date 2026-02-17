@@ -27,6 +27,7 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     p1: params.palette[1],
     p2: params.palette[2],
     p3: params.palette[3],
+    p4: params.palette[4],
     silhouetteOutline: params.silhouetteOutlineColor,
     outlineShadow: params.outlineShadowColor,
     outlineLight: params.outlineLightColor,
@@ -95,6 +96,18 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
       bindings.onParamPatch({ ambientIntensity: value });
     });
   shadeFolder
+    .add(params, "highlightAmount", 0, 1, 0.001)
+    .name("highlightAmount")
+    .onChange((value: number) => {
+      bindings.onParamPatch({ highlightAmount: value });
+    });
+  shadeFolder
+    .add(params, "highlightOpacity", 0, 1, 0.001)
+    .name("highlightOpacity")
+    .onChange((value: number) => {
+      bindings.onParamPatch({ highlightOpacity: value });
+    });
+  shadeFolder
     .add(params, "flatShading")
     .name("flatShading")
     .onChange((value: boolean) => {
@@ -146,6 +159,10 @@ export function createUi(params: AppParams, bindings: UiBindings): AppUi {
     .addColor(paletteProxy, "p3")
     .name("palette[3]")
     .onChange((value: string) => updatePalette(3, value));
+  paletteFolder
+    .addColor(paletteProxy, "p4")
+    .name("palette[4]")
+    .onChange((value: string) => updatePalette(4, value));
   paletteFolder
     .addColor(paletteProxy, "outlineShadow")
     .name("outlineShadowColor")

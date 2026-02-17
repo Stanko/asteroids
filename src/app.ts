@@ -155,13 +155,11 @@ export function initApp(root: HTMLElement): void {
         .toUpperCase()
         .padStart(7, "0")}`;
       const distortion = roundTo3(0.45 + random() * 4.55);
-      const size = roundTo3(0.8 + random() * 0.3);
 
       applyParamPatch(
         {
           seed,
           distortion,
-          size,
         },
         { regenerate: true, syncUrl: false },
       );
@@ -441,9 +439,27 @@ export function initApp(root: HTMLElement): void {
     context.lineTo(points[3].x, points[3].y);
     context.closePath();
 
-    context.strokeStyle = "rgba(128,184,255,0.95)";
+    context.strokeStyle = "rgba(128,100,128,0.95)";
     context.lineWidth = 1;
     context.stroke();
+
+    const radii = [10, 14, 18];
+    const px = overlayCanvas.width / params.exportSizePx;
+    radii.forEach((abs, i) => {
+      const r = px * abs;
+      // draw asteroid game collision area
+      context.beginPath();
+      context.arc(
+        overlayCanvas.width / 2,
+        overlayCanvas.height / 2,
+        r,
+        0,
+        Math.PI * 2,
+      );
+      context.strokeStyle = `rgba(250,50,${250 - i * 100},0.5)`;
+      context.lineWidth = 1;
+      context.stroke();
+    });
   }
 
   function applyOutlineColor(sourceParams: AppParams): void {
@@ -490,6 +506,8 @@ export function initApp(root: HTMLElement): void {
     target.toonSteps = source.toonSteps;
     target.lightIntensity = source.lightIntensity;
     target.ambientIntensity = source.ambientIntensity;
+    target.highlightAmount = source.highlightAmount;
+    target.highlightOpacity = source.highlightOpacity;
     target.flatShading = source.flatShading;
 
     target.rotationSteps = source.rotationSteps;

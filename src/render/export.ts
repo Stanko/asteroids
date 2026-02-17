@@ -25,7 +25,7 @@ type ExportOptions = {
   previewConfig: { width: number; height: number; pixelSize: number };
 };
 
-const PER_ROW = 16;
+const PER_ROW = 12;
 
 export async function exportSpriteSheet(
   options: ExportOptions,
