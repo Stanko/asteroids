@@ -12,7 +12,21 @@ Please note that outputs are not AI generated, only the code. Images are purely 
 
 ## Setup 
 
-- Install node v24.3.0
-- Install dependencies `npm install`
-- Run local server `npm start`
-- Open http://localhost:5173
+* Install node v24.3.0
+* Install dependencies `npm install`
+* Run local server `npm start`
+* Open http://localhost:5173
+
+
+## Links
+
+3d to pixel rendering.
+
+* https://threejs.org/examples/webgl_postprocessing_pixel.html
+* https://github.com/KodyJKing/hello-threejs?tab=readme-ov-file
+* https://www.youtube.com/watch?v=jFevm02NJ5M
+* https://imgur.com/gallery/creating-pixel-art-scene-realtime-3d-qwhbHQq
+* https://imgur.com/user/t3ssel8r
+* https://github.com/CBerry22/3d-Pixel-Art-In-Godot-4?tab=readme-ov-file
+* https://www.youtube.com/watch?v=WBoApONC7bM
+* https://www.davidhol.land/articles/3d-pixel-art-rendering/
